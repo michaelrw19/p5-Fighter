@@ -9,6 +9,7 @@ let p1Ani;
 let P2;
 let P2Ani;
 
+let winner = "";
 let gameState = "run"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
@@ -16,6 +17,7 @@ const HURT_DELAY_DURATION = 200; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = true; // set to false when playing
+const HEALTH = 1;
 
 // Load Animation, Sound Effect, Music
 function preload() {
@@ -26,6 +28,7 @@ function preload() {
   p1_attack_2.frameDelay = 4;
   p1_death = loadAnimation(imageSequence("assets/p1/death/", 6))
   p1_hurt = loadAnimation(imageSequence("assets/p1/hurt/", 6))
+  p1_hurt.frameDelay = 4;
   p1_run = loadAnimation(imageSequence("assets/p1/run/", 6))
   p1_idle = loadAnimation(imageSequence("assets/p1/idle/", 4))
   p1_idle.frameDelay = 8;
@@ -34,8 +37,9 @@ function preload() {
   p2_attack_1 = loadAnimation(imageSequence("assets/p2/attack_1/", 6))
   p2_attack_1.frameDelay = 4;
   p2_attack_2 = loadAnimation(imageSequence("assets/p2/attack_2/", 6))
-  p2_attack_2.frameDelay = 8;
+  p2_attack_2.frameDelay = 4;
   p2_death = loadAnimation(imageSequence("assets/p2/death/", 6))
+  p2_death.frameDelay = 12;
   p2_hurt = loadAnimation(imageSequence("assets/p2/hurt/", 6))
   p2_hurt.frameDelay = 4;
   p2_run = loadAnimation(imageSequence("assets/p2/run/", 6))
@@ -54,6 +58,7 @@ function setup() {
   p1.x = width * 0.4;
   p1.y = height * 0.5;
   p1.rotationLock = true;
+  p1.healthPoints = HEALTH;
   
   //Add animations
   p1.addAni('attack_1', p1_attack_1);
@@ -62,6 +67,8 @@ function setup() {
   p1.addAni('hurt', p1_hurt);
   p1.addAni('run', p1_run);
   p1.addAni('idle', p1_idle);
+  
+  p1.anis.death.looping = false;
   
   p1.delay = false;
   
@@ -125,9 +132,20 @@ function setup() {
       this.isHurt = false;
       this.delay = false;
       
+      this.healthPoints -= 1;
+      
       setTimeout(() => {
         this.isHurt = false;
         this.delay = false;
+        if(this.healthPoints == 0) { 
+          this.delay = true;
+          p2.delay = true;
+          this.changeAni('death') 
+          setTimeout(() => {
+            winner = 'p2'
+            gameState = 'end';
+          }, 1000)
+        } 
       }, HURT_DELAY_DURATION); // Cooldown in ms
     }
     // Default action
@@ -145,7 +163,7 @@ function setup() {
   p2.y = height * 0.5;
   p2.scale.x = -1;
   p2.rotationLock = true;
-  p2.isHit = false;
+  p2.healthPoints = HEALTH;
   
   p2.addAni('attack_1', p2_attack_1);
   p2.addAni('attack_2', p2_attack_2);
@@ -153,6 +171,8 @@ function setup() {
   p2.addAni('hurt', p2_hurt);
   p2.addAni('run', p2_run);
   p2.addAni('idle', p2_idle);
+  
+  p2.anis.death.looping = false;
   
   // Delays needed to finish an animation
   p2.delay = false;
@@ -164,7 +184,8 @@ function setup() {
   // Listen to events for p2
   p2.update = async function () {
     
-    speed = 3;    
+    speed = 3;
+    
     if (this.delay) return;
     
     if (kb.pressing(',') && this.x - (this.width / 2) > this.width) {
@@ -211,9 +232,20 @@ function setup() {
       this.isHurt = false;
       this.delay = false;
       
+      this.healthPoints -= 1;
+      
       setTimeout(() => {
         this.isHurt = false;
         this.delay = false;
+        if(this.healthPoints == 0) { 
+          this.delay = true;
+          p1.delay = true;
+          this.changeAni('death') 
+          setTimeout(() => {
+            winner = 'p1'
+            gameState = 'end';
+          }, 1000)
+        } 
       }, HURT_DELAY_DURATION); // Cooldown in ms
     }
     // Default action
@@ -229,8 +261,10 @@ function setup() {
   p2.hitbox.overlaps(p1);
   p2.hitbox.overlaps(p1.hitbox);
   
-  //allSprites.autoDraw = false;  // Stop auto drawing
-  //allSprites.autoUpdate = false;  // Stop auto updating
+  // disable all the automatic stuff
+  // allSprites.autoDraw = false;
+  // allSprites.autoUpdate = false;
+  // world.autoStep = false; 
   
   allSprites.debug = true; // Set to false when playing
 }
@@ -238,6 +272,7 @@ function setup() {
 ////////////////////////////////////////////////////
 function draw() {   
   if (gameState == "run") runGame();  
+  if (gameState == "end") endGame();  
 }
 
 ////////////////////////////////////////////////////
@@ -251,13 +286,43 @@ function runGame() {
   p2.hitbox.x = p2.x - 41; //Relative to p2
   p2.hitbox.y = p2.y;
   
-  //allSprites.update();
-  //allSprites.draw();
-  //world.step();  
+  // allSprites.update();
+  // allSprites.draw();dd
+  // world.step();  
   
 }
 
-function update() {
+function endGame() {
+  background('black');
+  
+  noStroke();  
+  fill('red');
+  textAlign(CENTER);
+  textSize(72);
+  textFont("Arial");
+  text("GAME OVER!!!", width/2, height*0.2);
+  
+  fill('white');
+  textSize(24);
+  textFont("Arial");
+  text((winner + " WINS"), width/2, height*0.3);
+  
+  fill('white');
+  textSize(24);
+  textFont("Arial");
+  text("Click to try again", width/2, height*0.4);
+  
+  if (mouse.presses()) {
+    gameState = "run";
+    p1.healthPoints = HEALTH;
+    p2.healthPoints = HEALTH;
+    p1.delay = false;
+    p2.delay = false;
+    p1.x = width * 0.4;
+    p1.y = height * 0.5;
+    p2.x = width * 0.6;
+    p2.y = height * 0.5;
+  }
 }
 
 ////////////////////////////////////////////////////
@@ -267,10 +332,6 @@ function imageSequence(prefix, numberOfFrames, ext=".png") {
     sequence[i] = prefix + i + ext;  
   }
   return sequence;  
-}
-
-function isHit() {
-  print('test');
 }
 
 
