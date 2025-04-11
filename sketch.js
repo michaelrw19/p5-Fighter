@@ -16,8 +16,8 @@ const ATTACK_DELAY_DURATION = 500; // in ms
 const HURT_DELAY_DURATION = 200; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
-const SHOW_HITBOX = true; // set to false when playing
-const HEALTH = 1;
+const SHOW_HITBOX = false; // set to false when playing
+const HEALTH = 11;
 
 // Load Animation, Sound Effect, Music
 function preload() {
@@ -84,10 +84,10 @@ function setup() {
     
     if (this.delay) return;
     
-    if (kb.pressing('a') && this.x - this.width / 2 > 0) {
+    if (kb.pressing('a') && !this.isHurt && this.x - this.width / 2 > 0) {
       this.x -= speed; //Backward
     } 
-    else if (kb.pressing('d') && this.x + (this.width / 2) + this.width < width) {
+    else if (kb.pressing('d') && !this.isHurt && this.x + (this.width / 2) + this.width < width) {
       this.x += speed; //Forward
       this.changeAni('run'); 
     } 
@@ -98,7 +98,7 @@ function setup() {
       //await ensure the next animation doesnt take over the attack animation
       await this.changeAni('attack_1'); 
       //Figure out if the collision detection should be before or after attack animation finishes
-      if(p1.hitbox.overlapping(p2)) { 
+      if(p1.hitbox.overlapping(p2)) {
         print('p1 Hits p2 with attack 1')
         p2.isHurt = true;
       }
@@ -188,11 +188,11 @@ function setup() {
     
     if (this.delay) return;
     
-    if (kb.pressing(',') && this.x - (this.width / 2) > this.width) {
+    if (kb.pressing(',') && !this.isHurt && this.x - (this.width / 2) > this.width) {
       this.x -= speed; //Forward
       this.changeAni('run');
     } 
-    else if (kb.pressing('.') && this.x + this.width / 2 < width) {
+    else if (kb.pressing('.') && !this.isHurt && this.x + this.width / 2 < width) {
       this.x += speed; //Backward
     } 
     // ATTACK 1
