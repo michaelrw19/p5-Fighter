@@ -9,7 +9,6 @@ let p1Ani;
 let P2;
 let P2Ani;
 
-let winner = "";
 let gameState = "run"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
@@ -17,7 +16,7 @@ const HURT_DELAY_DURATION = 200; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 11;
+const HEALTH = 5;
 
 // Load Animation, Sound Effect, Music
 function preload() {
@@ -59,6 +58,7 @@ function setup() {
   p1.y = height * 0.5;
   p1.rotationLock = true;
   p1.healthPoints = HEALTH;
+  p1.hitTime = undefined;
   
   //Add animations
   p1.addAni('attack_1', p1_attack_1);
@@ -93,14 +93,19 @@ function setup() {
     } 
     // ATTACK_1
     else if (kb.pressing('q')) {
+      this.hitTime = Math.floor(millis());
+      print('p1 hittime: ', this.hitTime);
       this.delay = true;
       
       //await ensure the next animation doesnt take over the attack animation
       await this.changeAni('attack_1'); 
       //Figure out if the collision detection should be before or after attack animation finishes
-      if(p1.hitbox.overlapping(p2)) {
-        print('p1 Hits p2 with attack 1')
-        p2.isHurt = true;
+      if(this.hitbox.overlapping(p2)) {
+        // undefined means opponent doesn't click attack, equal means pressed at same time
+        if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) {
+          print('p1 Hits p2 with attack 1')
+          p2.isHurt = true;
+        }
       }
       // this is needed to also ensure attack animation only loop once while waiting for the timeout below
       this.changeAni('idle');
@@ -108,21 +113,27 @@ function setup() {
       setTimeout(() => {
         //the delay var ensures the update loop to return nothing so it doesnt go to the else statement and interupt the curret animation
         this.delay = false;
+        this.hitTime = undefined; // reset hitTime
       }, ATTACK_DELAY_DURATION);
     }
     // ATTACK_2
     else if (kb.pressing('w')) {
+      this.hitTime = Math.floor(millis());
+      print('p1 hittime: ', this.hitTime);
       this.delay = true;
       
       await this.changeAni('attack_2');
-      if(p1.hitbox.overlapping(p2)) { 
-        print('p1 Hits p2 with attack 2')
-        p2.isHurt = true;
+      if(this.hitbox.overlapping(p2)) { 
+        if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) {
+          print('p1 Hits p2 with attack 2')
+          p2.isHurt = true;
+        }
       }
       this.changeAni('idle');
 
       setTimeout(() => {
         this.delay = false;
+        this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); // Cooldown in ms
     }
     else if (this.isHurt) {
@@ -142,7 +153,6 @@ function setup() {
           p2.delay = true;
           this.changeAni('death') 
           setTimeout(() => {
-            winner = 'p2'
             gameState = 'end';
           }, 1000)
         } 
@@ -164,6 +174,7 @@ function setup() {
   p2.scale.x = -1;
   p2.rotationLock = true;
   p2.healthPoints = HEALTH;
+  p2.hitTime = undefined;
   
   p2.addAni('attack_1', p2_attack_1);
   p2.addAni('attack_2', p2_attack_2);
@@ -197,32 +208,42 @@ function setup() {
     } 
     // ATTACK 1
     else if (kb.pressing('k')) {
+      this.hitTime = Math.floor(millis());
+      print('p2 hittime: ', this.hitTime);
       this.delay = true;
 
       await this.changeAni('attack_1');
-      if(p2.hitbox.overlapping(p1)) { 
-        print('p2 Hits p1')
-        p1.isHurt = true;
+      if(this.hitbox.overlapping(p1)) { 
+        if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) {
+          print('p2 Hits p1 with attack 1')
+          p1.isHurt = true;
+        }
       }
       this.changeAni('idle');
 
       setTimeout(() => {
         this.delay = false;
+        this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); // Cooldown in ms
     }
     // ATTACK 2
     else if (kb.pressing('l')) {
+      this.hitTime = Math.floor(millis());
+      print('p2 hittime: ', this.hitTime);
       this.delay = true;
       
       await this.changeAni('attack_2');
-      if(p2.hitbox.overlapping(p1)) { 
-        print('p2 Hits p1')
-        p1.isHurt = true;
+      if(this.hitbox.overlapping(p1)) { 
+        if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) {
+          print('p2 Hits p1 with attack 1')
+          p1.isHurt = true;
+        }
       }
       this.changeAni('idle'); 
 
       setTimeout(() => {
         this.delay = false;
+        this.hitTime = undefined;        
       }, ATTACK_DELAY_DURATION); // Cooldown in ms
     }
     else if (this.isHurt) {
@@ -242,7 +263,6 @@ function setup() {
           p1.delay = true;
           this.changeAni('death') 
           setTimeout(() => {
-            winner = 'p1'
             gameState = 'end';
           }, 1000)
         } 
@@ -305,7 +325,17 @@ function endGame() {
   fill('white');
   textSize(24);
   textFont("Arial");
-  text((winner + " WINS"), width/2, height*0.3);
+  wiiner = "";
+  if (p1.healthPoints == p2.healthPoints) {
+    winner = "Draw"
+  }
+  else if (p1.healthPoints > p2.healthPoints) {
+    winner = "p1 Wins"
+  }
+  else (
+    winner = "p2 Wins"
+  )
+  text(winner, width/2, height*0.3);
   
   fill('white');
   textSize(24);
@@ -334,4 +364,8 @@ function imageSequence(prefix, numberOfFrames, ext=".png") {
   return sequence;  
 }
 
+async function test() {
+  print('gelo');
+  print(p1.x);
+}
 
