@@ -9,6 +9,8 @@ let p1Ani;
 let P2;
 let P2Ani;
 
+let cityImg;
+
 let gameState = "run"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
@@ -17,6 +19,10 @@ const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
 const HEALTH = 5;
+const DURATION = 60;
+
+let timer = DURATION;
+let lastTime = 0;
 
 // Load Animation, Sound Effect, Music
 function preload() {
@@ -44,11 +50,15 @@ function preload() {
   p2_run = loadAnimation(imageSequence("assets/p2/run/", 6))
   p2_idle = loadAnimation(imageSequence("assets/p2/idle/", 4))
   p2_idle.frameDelay = 8;
+  
+  // Background
+  cityImg = loadImage("assets/city.png")
 }
 
 // Setup
 function setup() {
-  new Canvas(windowWidth, windowHeight);
+  new Canvas(1080, 1020);
+  print(windowWidth, windowHeight)
   
   // p1 Setup
   p1 = new Sprite();  
@@ -291,13 +301,35 @@ function setup() {
 
 ////////////////////////////////////////////////////
 function draw() {   
+  background('black')
+  image(cityImg, 0, 0, width, height, 0, 0, cityImg.width, cityImg.height, CONTAIN);
   if (gameState == "run") runGame();  
   if (gameState == "end") endGame();  
 }
 
 ////////////////////////////////////////////////////
-function runGame() {
-  background('black');
+function runGame() {  
+  countdown();
+  print(p1.healthPoints);
+  
+  fill('white');
+  textSize(24);
+  textFont("Arial");
+  
+  // Print Movesets
+  textAlign(LEFT)
+  text("Q and W to attack\nA and D to move", 0, height*0.25);
+  textAlign(RIGHT)
+  text("K and L to attack\n, and . to move", width, height*0.25);
+  
+  
+  // Print Health and Time
+  textAlign(LEFT)
+  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  textAlign(CENTER)
+  text((timer), width*0.5, height*0.34);
+  textAlign(RIGHT)
+  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
   //Hitbox Behaviours, 41 makes gives enough space to prevent it from pushing
   p1.hitbox.x = p1.x + 41; //Relative to p1
@@ -312,15 +344,13 @@ function runGame() {
   
 }
 
-function endGame() {
-  background('black');
-  
+function endGame() {  
   noStroke();  
   fill('red');
   textAlign(CENTER);
   textSize(72);
   textFont("Arial");
-  text("GAME OVER!!!", width/2, height*0.2);
+  text("GAME OVER!!!", width/2, height*0.15);
   
   fill('white');
   textSize(24);
@@ -335,12 +365,13 @@ function endGame() {
   else (
     winner = "p2 Wins"
   )
-  text(winner, width/2, height*0.3);
+  text(winner, width/2, height*0.20);
+  text("Click to try again", width/2, height*0.25);
   
-  fill('white');
-  textSize(24);
-  textFont("Arial");
-  text("Click to try again", width/2, height*0.4);
+  textAlign(LEFT)
+  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  textAlign(RIGHT)
+  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
   if (mouse.presses()) {
     gameState = "run";
@@ -352,6 +383,7 @@ function endGame() {
     p1.y = height * 0.5;
     p2.x = width * 0.6;
     p2.y = height * 0.5;
+    timer = DURATION;
   }
 }
 
@@ -364,8 +396,15 @@ function imageSequence(prefix, numberOfFrames, ext=".png") {
   return sequence;  
 }
 
-async function test() {
-  print('gelo');
-  print(p1.x);
+function countdown() {
+  if (millis() - lastTime >= 1000 && timer > 0) {
+    timer--;
+    lastTime = millis();
+  }
+  if(timer <= 0) {
+    gameState = "end"
+    p1.delay = true;
+    p2.delay = true;
+  }
 }
 
