@@ -17,11 +17,11 @@ let music;
 let gameState = "intro"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
-const HURT_DELAY_DURATION = 200; // in ms
+const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 5;
+const HEALTH = 15;
 const DURATION = 60;
 
 let timer = DURATION;
@@ -130,7 +130,7 @@ function setup() {
       this.changeAni('run'); 
     } 
     // ATTACK_1
-    else if (kb.pressing('q')) {
+    else if (kb.presses('q')) {
       this.hitTime = Math.floor(millis());
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
@@ -156,7 +156,7 @@ function setup() {
       }, ATTACK_DELAY_DURATION);
     }
     // ATTACK_2
-    else if (kb.pressing('w')) {
+    else if (kb.presses('w')) {
       this.hitTime = Math.floor(millis());
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
@@ -253,7 +253,7 @@ function setup() {
       this.x += speed; //Backward
     } 
     // ATTACK 1
-    else if (kb.pressing('k')) {
+    else if (kb.presses('k')) {
       this.hitTime = Math.floor(millis());
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
@@ -274,7 +274,7 @@ function setup() {
       }, ATTACK_DELAY_DURATION); // Cooldown in ms
     }
     // ATTACK 2
-    else if (kb.pressing('l')) {
+    else if (kb.presses('l')) {
       this.hitTime = Math.floor(millis());
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
@@ -382,7 +382,7 @@ function introGame() {
     p1.delay = false;
     p2.delay = false;
     music.play();
-    music.setVolume(0.5);
+    music.setVolume(0.1);
   }
 }
 
