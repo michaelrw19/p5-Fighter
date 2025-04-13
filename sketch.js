@@ -1,6 +1,8 @@
 // References:
 // p1 and P2 animations: https://craftpix.net/freebies/free-3-cyberpunk-characters-pixel-art
-// Music from: 
+// Map from: https://craftpix.net/freebies/free-pixel-art-street-2d-backgrounds/
+// Music from: zerothree [bit-8] - Fight Song [8-Bit; VRC6] - (Eve (https://www.youtube.com/watch?v=wbJQx9aK4KI)
+// SFX from: Tekken 8
 // Font:
 
 let p1;
@@ -10,15 +12,16 @@ let P2;
 let P2Ani;
 
 let cityImg;
+let music;
 
-let gameState = "run"
+let gameState = "intro"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
 const HURT_DELAY_DURATION = 200; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 5;
+const HEALTH = 1;
 const DURATION = 60;
 
 let timer = DURATION;
@@ -26,33 +29,50 @@ let lastTime = 0;
 
 // Load Animation, Sound Effect, Music
 function preload() {
-  //p1 Animations
+  //p1 Animations and sfx
   p1_attack_1 = loadAnimation(imageSequence("assets/p1/attack_1/", 6))
   p1_attack_1.frameDelay = 4;
+  
   p1_attack_2 = loadAnimation(imageSequence("assets/p1/attack_2/", 6))
   p1_attack_2.frameDelay = 4;
+  
   p1_death = loadAnimation(imageSequence("assets/p1/death/", 6))
+  p1_death.frameDelay = 8;
+  p1_death_sfx = [loadSound("assets/p1/death/sfx1.wav"), loadSound("assets/p1/death/sfx2.wav")];
+  
   p1_hurt = loadAnimation(imageSequence("assets/p1/hurt/", 6))
   p1_hurt.frameDelay = 4;
+  
   p1_run = loadAnimation(imageSequence("assets/p1/run/", 6))
+  
   p1_idle = loadAnimation(imageSequence("assets/p1/idle/", 4))
   p1_idle.frameDelay = 8;
+  
   
   //p2 Animations
   p2_attack_1 = loadAnimation(imageSequence("assets/p2/attack_1/", 6))
   p2_attack_1.frameDelay = 4;
+  
   p2_attack_2 = loadAnimation(imageSequence("assets/p2/attack_2/", 6))
   p2_attack_2.frameDelay = 4;
+  
   p2_death = loadAnimation(imageSequence("assets/p2/death/", 6))
   p2_death.frameDelay = 12;
+  p2_death_sfx = [loadSound("assets/p2/death/sfx1.wav"), loadSound("assets/p2/death/sfx2.wav")];
+  
   p2_hurt = loadAnimation(imageSequence("assets/p2/hurt/", 6))
   p2_hurt.frameDelay = 4;
+  
   p2_run = loadAnimation(imageSequence("assets/p2/run/", 6))
   p2_idle = loadAnimation(imageSequence("assets/p2/idle/", 4))
   p2_idle.frameDelay = 8;
   
   // Background
   cityImg = loadImage("assets/city.png")
+  
+  // Music
+  music = loadSound("assets/music.mp3");
+  
 }
 
 // Setup
@@ -80,7 +100,7 @@ function setup() {
   
   p1.anis.death.looping = false;
   
-  p1.delay = false;
+  p1.delay = true;
   
   // Define Hitbox
   p1.hitbox = createSprite(p1.x + 40, p1.y, 20, 60);
@@ -89,7 +109,6 @@ function setup() {
     
   // Listen to events for p1
   p1.update = async function () {
-  
     speed = 3;
     
     if (this.delay) return;
@@ -161,7 +180,11 @@ function setup() {
         if(this.healthPoints == 0) { 
           this.delay = true;
           p2.delay = true;
-          this.changeAni('death') 
+          p1_death_sfx[Math.floor(Math.random() * 2)].play();
+          this.changeAni('death');
+          // To fix looping issue
+          this.ani.frame = 0;
+          this.ani.play()
           setTimeout(() => {
             gameState = 'end';
           }, 1000)
@@ -195,8 +218,8 @@ function setup() {
   
   p2.anis.death.looping = false;
   
-  // Delays needed to finish an animation
-  p2.delay = false;
+  // Delays needed to finish an animation / prevent action
+  p2.delay = true;
   
   // Define Hitbox
   p2.hitbox = createSprite(p2.x - 40, p2.y, 20, 60);
@@ -271,7 +294,11 @@ function setup() {
         if(this.healthPoints == 0) { 
           this.delay = true;
           p1.delay = true;
-          this.changeAni('death') 
+
+          p2_death_sfx[Math.floor(Math.random() * 2)].play();
+          this.changeAni('death');
+          this.ani.frame = 0;
+          this.ani.play();
           setTimeout(() => {
             gameState = 'end';
           }, 1000)
@@ -296,22 +323,56 @@ function setup() {
   // allSprites.autoUpdate = false;
   // world.autoStep = false; 
   
-  allSprites.debug = true; // Set to false when playing
+  allSprites.debug = SHOW_HITBOX; // Set to false when playing
 }
 
 ////////////////////////////////////////////////////
 function draw() {   
+  //music.play(); add this to intro state
   background('black')
   image(cityImg, 0, 0, width, height, 0, 0, cityImg.width, cityImg.height, CONTAIN);
+  if (gameState == "intro") introGame();
   if (gameState == "run") runGame();  
   if (gameState == "end") endGame();  
 }
 
-////////////////////////////////////////////////////
-function runGame() {  
-  countdown();
-  print(p1.healthPoints);
+function introGame() {
   
+  fill('white');
+  textFont("Arial");
+  
+  textSize(36);
+  textAlign(CENTER);
+  text("Click mouse to start game", width/2, height*0.15);
+  
+  textSize(24);
+  // Print Movesets
+  textAlign(LEFT)
+  text("Q and W to attack\nA and D to move", 0, height*0.25);
+  textAlign(RIGHT)
+  text("K and L to attack\n, and . to move", width, height*0.25);
+  
+  // Print Health and Time
+  textAlign(LEFT)
+  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  textAlign(CENTER)
+  text((timer), width*0.5, height*0.34);
+  textAlign(RIGHT)
+  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
+  
+  if (mouse.presses()) {
+    gameState = "run";
+    p1.delay = false;
+    p2.delay = false;
+    music.play();
+    music.setVolume(0.5);
+  }
+}
+
+////////////////////////////////////////////////////
+function runGame() {
+  countdown();
+    
   fill('white');
   textSize(24);
   textFont("Arial");
@@ -384,6 +445,9 @@ function endGame() {
     p2.x = width * 0.6;
     p2.y = height * 0.5;
     timer = DURATION;
+    
+    music.stop();
+    music.play();
   }
 }
 
