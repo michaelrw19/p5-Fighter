@@ -21,7 +21,7 @@ const HURT_DELAY_DURATION = 200; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 1;
+const HEALTH = 5;
 const DURATION = 60;
 
 let timer = DURATION;
@@ -32,9 +32,11 @@ function preload() {
   //p1 Animations and sfx
   p1_attack_1 = loadAnimation(imageSequence("assets/p1/attack_1/", 6))
   p1_attack_1.frameDelay = 4;
+  p1_attack_1_sfx = [loadSound("assets/p1/attack_1/sfx1.wav"), loadSound("assets/p1/attack_1/sfx2.wav"), loadSound("assets/p1/attack_1/sfx3.wav")];
   
   p1_attack_2 = loadAnimation(imageSequence("assets/p1/attack_2/", 6))
   p1_attack_2.frameDelay = 4;
+  p1_attack_2_sfx = [loadSound("assets/p1/attack_2/sfx1.wav"), loadSound("assets/p1/attack_2/sfx2.wav"), loadSound("assets/p1/attack_2/sfx3.wav")];
   
   p1_death = loadAnimation(imageSequence("assets/p1/death/", 6))
   p1_death.frameDelay = 8;
@@ -42,19 +44,23 @@ function preload() {
   
   p1_hurt = loadAnimation(imageSequence("assets/p1/hurt/", 6))
   p1_hurt.frameDelay = 4;
+  p1_hurt_sfx = [loadSound("assets/p1/hurt/sfx1.wav"), loadSound("assets/p1/hurt/sfx2.wav"), loadSound("assets/p1/hurt/sfx3.wav")];
   
   p1_run = loadAnimation(imageSequence("assets/p1/run/", 6))
   
   p1_idle = loadAnimation(imageSequence("assets/p1/idle/", 4))
   p1_idle.frameDelay = 8;
   
+  p1_win_sfx = loadSound("assets/p1/win/sfx.wav")
   
   //p2 Animations
   p2_attack_1 = loadAnimation(imageSequence("assets/p2/attack_1/", 6))
   p2_attack_1.frameDelay = 4;
+  p2_attack_1_sfx = [loadSound("assets/p2/attack_1/sfx1.wav"), loadSound("assets/p2/attack_1/sfx2.wav"), loadSound("assets/p2/attack_1/sfx3.wav")];
   
   p2_attack_2 = loadAnimation(imageSequence("assets/p2/attack_2/", 6))
   p2_attack_2.frameDelay = 4;
+  p2_attack_2_sfx = [loadSound("assets/p2/attack_2/sfx1.wav"), loadSound("assets/p2/attack_2/sfx2.wav"), loadSound("assets/p2/attack_2/sfx3.wav")];
   
   p2_death = loadAnimation(imageSequence("assets/p2/death/", 6))
   p2_death.frameDelay = 12;
@@ -62,10 +68,13 @@ function preload() {
   
   p2_hurt = loadAnimation(imageSequence("assets/p2/hurt/", 6))
   p2_hurt.frameDelay = 4;
+  p2_hurt_sfx = [loadSound("assets/p2/hurt/sfx1.wav"), loadSound("assets/p2/hurt/sfx2.wav"), loadSound("assets/p2/hurt/sfx3.wav")];
   
   p2_run = loadAnimation(imageSequence("assets/p2/run/", 6))
   p2_idle = loadAnimation(imageSequence("assets/p2/idle/", 4))
   p2_idle.frameDelay = 8;
+  
+  p2_win_sfx = loadSound("assets/p2/win/sfx.wav")
   
   // Background
   cityImg = loadImage("assets/city.png")
@@ -127,6 +136,7 @@ function setup() {
       this.delay = true;
       
       //await ensure the next animation doesnt take over the attack animation
+      p1_attack_1_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('attack_1'); 
       //Figure out if the collision detection should be before or after attack animation finishes
       if(this.hitbox.overlapping(p2)) {
@@ -151,6 +161,7 @@ function setup() {
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
       
+      p1_attack_2_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('attack_2');
       if(this.hitbox.overlapping(p2)) { 
         if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) {
@@ -167,6 +178,7 @@ function setup() {
     }
     else if (this.isHurt) {
       this.delay = true;
+      p1_hurt_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('hurt');
       this.changeAni('idle')
       this.isHurt = false;
@@ -187,6 +199,7 @@ function setup() {
           this.ani.play()
           setTimeout(() => {
             gameState = 'end';
+            if (p2.healthPoints > 0) {p2_win_sfx.play();}
           }, 1000)
         } 
       }, HURT_DELAY_DURATION); // Cooldown in ms
@@ -245,6 +258,7 @@ function setup() {
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
 
+      p2_attack_1_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('attack_1');
       if(this.hitbox.overlapping(p1)) { 
         if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) {
@@ -265,6 +279,7 @@ function setup() {
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
       
+      p2_attack_2_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('attack_2');
       if(this.hitbox.overlapping(p1)) { 
         if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) {
@@ -281,6 +296,7 @@ function setup() {
     }
     else if (this.isHurt) {
       this.delay = true;
+      p2_hurt_sfx[Math.floor(Math.random() * 3)].play();
       await this.changeAni('hurt');
       this.changeAni('idle')
       this.isHurt = false;
@@ -301,6 +317,7 @@ function setup() {
           this.ani.play();
           setTimeout(() => {
             gameState = 'end';
+            if (p1.healthPoints > 0) {p1_win_sfx.play();}
           }, 1000)
         } 
       }, HURT_DELAY_DURATION); // Cooldown in ms
