@@ -21,7 +21,7 @@ const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 15;
+const HEALTH = 3;
 const DURATION = 60;
 
 let timer = DURATION;
@@ -122,15 +122,15 @@ function setup() {
     
     if (this.delay) return;
     
-    if (kb.pressing('a') && !this.isHurt && this.x - this.width / 2 > 0) {
+    if ((contros[0] && contros[0].pressing('left')) || kb.pressing('a') && !this.isHurt && this.x - this.width / 2 > 0) {
       this.x -= speed; //Backward
     } 
-    else if (kb.pressing('d') && !this.isHurt && this.x + (this.width / 2) + this.width < width) {
+    else if ((contros[0] && contros[0].pressing('right')) || (kb.pressing('d')) && !this.isHurt && this.x + (this.width / 2) + this.width < width) {
       this.x += speed; //Forward
       this.changeAni('run'); 
     } 
     // ATTACK_1
-    else if (kb.presses('q')) {
+    else if ((contros[0] && contros[0].presses('x')) || kb.presses('q')) {
       this.hitTime = Math.floor(millis());
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
@@ -156,7 +156,7 @@ function setup() {
       }, ATTACK_DELAY_DURATION);
     }
     // ATTACK_2
-    else if (kb.presses('w')) {
+    else if ((contros[0] && contros[0].presses('y')) || kb.presses('w')) {
       this.hitTime = Math.floor(millis());
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
@@ -245,15 +245,15 @@ function setup() {
     
     if (this.delay) return;
     
-    if (kb.pressing(',') && !this.isHurt && this.x - (this.width / 2) > this.width) {
+    if ((contros[1] && contros[1].pressing('left')) || (kb.pressing(',')) && !this.isHurt && this.x - (this.width / 2) > this.width) {
       this.x -= speed; //Forward
       this.changeAni('run');
     } 
-    else if (kb.pressing('.') && !this.isHurt && this.x + this.width / 2 < width) {
+    else if ((contros[1] && contros[1].pressing('right')) || (kb.pressing('.')) && !this.isHurt && this.x + this.width / 2 < width) {
       this.x += speed; //Backward
     } 
     // ATTACK 1
-    else if (kb.presses('k')) {
+    else if ((contros[1] && contros[1].presses('x')) || kb.presses('k')) {
       this.hitTime = Math.floor(millis());
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
@@ -274,7 +274,7 @@ function setup() {
       }, ATTACK_DELAY_DURATION); // Cooldown in ms
     }
     // ATTACK 2
-    else if (kb.presses('l')) {
+    else if ((contros[1] && contros[1].presses('y')) || kb.presses('l')) {
       this.hitTime = Math.floor(millis());
       print('p2 hittime: ', this.hitTime);
       this.delay = true;
@@ -360,14 +360,20 @@ function introGame() {
   
   textSize(36);
   textAlign(CENTER);
-  text("Click mouse to start game", width/2, height*0.15);
+  text("Press any button to start game", width/2, height*0.15);
   
   textSize(24);
   // Print Movesets
-  textAlign(LEFT)
-  text("Q and W to attack\nA and D to move", 0, height*0.25);
-  textAlign(RIGHT)
-  text("K and L to attack\n, and . to move", width, height*0.25);
+  if (contros[0]) {
+      textAlign(CENTER)
+      text("Left and Right to move\nX and Y to attack", width/2, height*0.20);
+  }
+  else {
+      textAlign(LEFT)
+      text("Q and W to attack\nA and D to move", 0, height*0.25);
+      textAlign(RIGHT)
+      text("K and L to attack\n, and . to move", width, height*0.25);
+  }
   
   // Print Health and Time
   textAlign(LEFT)
@@ -377,7 +383,7 @@ function introGame() {
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (mouse.presses()) {
+  if (keyIsPressed || contros[0] && (contros[0].presses('a') || contros[1].presses('a'))) {
     gameState = "run";
     p1.delay = false;
     p2.delay = false;
@@ -393,12 +399,17 @@ function runGame() {
   fill('white');
   textSize(24);
   textFont("Arial");
-  
   // Print Movesets
-  textAlign(LEFT)
-  text("Q and W to attack\nA and D to move", 0, height*0.25);
-  textAlign(RIGHT)
-  text("K and L to attack\n, and . to move", width, height*0.25);
+  if (contros[0]) {
+      textAlign(CENTER)
+      text("Left and Right to move\nX and Y to attack", width/2, height*0.20);
+  }
+  else {
+      textAlign(LEFT)
+      text("Q and W to attack\nA and D to move", 0, height*0.25);
+      textAlign(RIGHT)
+      text("K and L to attack\n, and . to move", width, height*0.25);
+  }
   
   
   // Print Health and Time
@@ -444,14 +455,14 @@ function endGame() {
     winner = "p2 Wins"
   )
   text(winner, width/2, height*0.20);
-  text("Click to try again", width/2, height*0.25);
+  text("Press to try again", width/2, height*0.25);
   
   textAlign(LEFT)
   text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (mouse.presses()) {
+  if (keyIsPressed || (contros[0] && contros[0].presses('a') || contros[1].presses('a'))) {
     gameState = "run";
     p1.healthPoints = HEALTH;
     p2.healthPoints = HEALTH;
