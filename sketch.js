@@ -1,7 +1,7 @@
 // References:
 // p1 and P2 animations: https://craftpix.net/freebies/free-3-cyberpunk-characters-pixel-art
 // Map from: https://craftpix.net/freebies/free-pixel-art-street-2d-backgrounds/
-// Music from: zerothree [bit-8] - Fight Song [8-Bit; VRC6] - (Eve (https://www.youtube.com/watch?v=wbJQx9aK4KI)
+// Music from: zerothree [bit-8] - Fight Song [8-Bit; VRC6] - Eve (https://www.youtube.com/watch?v=wbJQx9aK4KI)
 // SFX from: Tekken 8
 // Font:
 
@@ -20,8 +20,8 @@ const ATTACK_DELAY_DURATION = 500; // in ms
 const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
-const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 3;
+const SHOW_HITBOX = true; // set to false when playing
+const HEALTH = 10;
 const DURATION = 60;
 
 let timer = DURATION;
@@ -135,8 +135,8 @@ function setup() {
       print('p1 hittime: ', this.hitTime);
       this.delay = true;
       
-      //await ensure the next animation doesnt take over the attack animation
       p1_attack_1_sfx[Math.floor(Math.random() * 3)].play();
+      //await ensure the next animation doesnt take over the attack animation
       await this.changeAni('attack_1'); 
       //Figure out if the collision detection should be before or after attack animation finishes
       if(this.hitbox.overlapping(p2)) {
@@ -383,7 +383,7 @@ function introGame() {
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (keyIsPressed || contros[0] && (contros[0].presses('a') || contros[1].presses('a'))) {
+  if (keyIsPressed || (contros[0] && contros[0].presses('a')) || (contros[1] && contros[1].presses('a'))) {
     gameState = "run";
     p1.delay = false;
     p2.delay = false;
@@ -427,10 +427,6 @@ function runGame() {
   p2.hitbox.x = p2.x - 41; //Relative to p2
   p2.hitbox.y = p2.y;
   
-  // allSprites.update();
-  // allSprites.draw();dd
-  // world.step();  
-  
 }
 
 function endGame() {  
@@ -462,7 +458,7 @@ function endGame() {
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (keyIsPressed || (contros[0] && contros[0].presses('a') || contros[1].presses('a'))) {
+  if (keyIsPressed || (contros[0] && contros[0].presses('a')) || (contros[1] && contros[1].presses('a'))) {
     gameState = "run";
     p1.healthPoints = HEALTH;
     p2.healthPoints = HEALTH;
