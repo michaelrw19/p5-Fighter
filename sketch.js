@@ -134,15 +134,6 @@ function setup() {
       
       // Check for collision or enemy hit while animation is running
       while (Date.now() - startTime < aniDuration) { // Stop loop until animation duration runs out
-        // If player is hit while animating, break the animation
-        if (this.isHurt) { // If enemy hit (p1 is hurt) // if (this.interrupt)
-          this.changeAni('hurt'); 
-          this.ani.frame = 0;
-          // Break the current animation and prepare hurt animation. Set the frame to 0 to let the hurt handler below to run the animation
-          this.delay = false; // Set delay to false to allow hurt animation to take over
-          //this.interrupt = false; 
-          return;
-        }
         // Only check for collision when frame it >= 4 (punch about to land)
         if (this.ani.frame >= 4) {
           this.hitbox.visible = SHOW_HITBOX; //debug purpose
@@ -155,6 +146,15 @@ function setup() {
         }
         else {
           this.hitbox.visible = false; //debug purpose
+        }
+        // If player is hit while animating, break the animation | Should be placed after collision check to allow both players to get hurt when hitTime is equal
+        if (this.isHurt) { // If enemy hit (p1 is hurt) // if (this.interrupt)
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          // Break the current animation and prepare hurt animation. Set the frame to 0 to let the hurt handler below to run the animation
+          this.delay = false; // Set delay to false to allow hurt animation to take over
+          //this.interrupt = false; 
+          return;
         }
         await new Promise(resolve => setTimeout(resolve, 16)); // Prevents the code from freezing the browser from the while loop by pausing for a ~1 frame
       }
@@ -189,16 +189,10 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        if (this.isHurt) { 
-          this.changeAni('hurt'); 
-          this.ani.frame = 0;
-          this.delay = false; 
-          return;
-        }
         if (this.ani.frame >= 4) {
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
-            if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
+            if(this.hitTime == p2.hitTime || this.hitTime < p2.hitTime || p2.hitTime == undefined) { 
               print('p1 Hits p2 with attack 1')
               p2.isHurt = true; // set p2 hurt flag to true
             }
@@ -206,6 +200,13 @@ function setup() {
         }
         else {
           this.hitbox.visible = false;
+        }
+        
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
         }
         await new Promise(resolve => setTimeout(resolve, 16)); 
       }
@@ -227,12 +228,6 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        if (this.isHurt) { 
-          this.changeAni('hurt'); 
-          this.ani.frame = 0;
-          this.delay = false; 
-          return;
-        }
         if (this.ani.frame == 4) { // Stricly check collision at frame 4
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
@@ -244,6 +239,12 @@ function setup() {
         }
         else {
           this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
         }
         await new Promise(resolve => setTimeout(resolve, 16)); 
       }
@@ -268,6 +269,7 @@ function setup() {
       setTimeout(() => {
         this.isHurt = false;
         this.delay = false;
+        this.hitTime = undefined;
         if(this.healthPoints == 0) { 
           this.delay = true;
           p2.delay = true;
@@ -347,16 +349,10 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        if (this.isHurt) { 
-          this.changeAni('hurt'); 
-          this.ani.frame = 0;
-          this.delay = false; 
-          return;
-        }
         if (this.ani.frame >= 4) {
-          this.hitbox.visible = SHOW_HITBOX; 
+          this.hitbox.visible = SHOW_HITBOX;
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
-            if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
+            if(this.hitTime == p1.hitTime || this.hitTime < p1.hitTime || p1.hitTime == undefined) { 
               print('p2 Hits p1 with attack 1')
               p1.isHurt = true; // set p1 hurt flag to true
             }
@@ -364,6 +360,12 @@ function setup() {
         }
         else {
           this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
         }
         await new Promise(resolve => setTimeout(resolve, 16)); 
       }
@@ -384,12 +386,6 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        if (this.isHurt) { 
-          this.changeAni('hurt'); 
-          this.ani.frame = 0;
-          this.delay = false; 
-          return;
-        }
         if (this.ani.frame == 4) { // Strictly at frame 4
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
@@ -401,6 +397,12 @@ function setup() {
         }
         else {
           this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
         }
         await new Promise(resolve => setTimeout(resolve, 16)); 
       }
@@ -425,6 +427,7 @@ function setup() {
       setTimeout(() => {
         this.isHurt = false;
         this.delay = false;
+        this.hitTime = undefined;
         if(this.healthPoints == 0) { 
           this.delay = true;
           p1.delay = true;
