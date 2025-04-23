@@ -21,7 +21,7 @@ const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = true; // set to false when playing
-const HEALTH = 10;
+const HEALTH = 1;
 const DURATION = 600;
 
 let timer = DURATION;
@@ -272,7 +272,6 @@ function setup() {
         this.hitTime = undefined;
         if(this.healthPoints == 0) { 
           this.delay = true;
-          p2.delay = true;
           p1_death_sfx[Math.floor(Math.random() * 2)].play();
           this.changeAni('death');
           // To fix looping issue
@@ -280,6 +279,7 @@ function setup() {
           this.ani.play()
           setTimeout(() => {
             gameState = 'end';
+            p2.delay = true;
             if (p2.healthPoints > 0) {p2_win_sfx.play();}
           }, 1000)
         } 
@@ -430,14 +430,14 @@ function setup() {
         this.hitTime = undefined;
         if(this.healthPoints == 0) { 
           this.delay = true;
-          p1.delay = true;
           p2_death_sfx[Math.floor(Math.random() * 2)].play();
           this.changeAni('death');
           // To fix looping issue
           this.ani.frame = 0;
-          this.ani.play()
+          this.ani.play();
           setTimeout(() => {
             gameState = 'end';
+            p1.delay = true;
             if (p1.healthPoints > 0) {p1_win_sfx.play();}
           }, 1000)
         } 
