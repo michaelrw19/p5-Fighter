@@ -221,7 +221,7 @@ function setup() {
     else if ((contros[0] && contros[0].presses('y')) || kb.presses('w')) {
       this.hitTime = Math.floor(millis()); 
       print('p1 hittime: ', this.hitTime);
-      p1_attack_1_sfx[Math.floor(Math.random() * 3)].play(); 
+      p1_attack_2_sfx[Math.floor(Math.random() * 3)].play(); 
       this.changeAni(['attack_2', 'idle']);
       let aniDuration = (6 * p1_attack_2.frameDelay) * (1000 / 60); 
       let startTime = Date.now(); 
