@@ -483,7 +483,7 @@ function introGame() {
   
   textSize(36);
   textAlign(CENTER);
-  text("Press any button to start game", width/2, height*0.15);
+  text("Press the start button to begin", width/2, height*0.15);
   
   textSize(24);
   // Print Movesets
@@ -506,7 +506,7 @@ function introGame() {
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (keyIsPressed || (contros[0] && contros[0].presses('a')) || (contros[1] && contros[1].presses('a'))) {
+  if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
     gameState = "run";
     p1.delay = false;
     p2.delay = false;
@@ -575,14 +575,14 @@ function endGame() {
     winner = "p2 Wins"
   )
   text(winner, width/2, height*0.20);
-  text("Press to try again", width/2, height*0.25);
+  text("Press start to try again", width/2, height*0.25);
   
   textAlign(LEFT)
   text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
   textAlign(RIGHT)
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
-  if (keyIsPressed || (contros[0] && contros[0].presses('a')) || (contros[1] && contros[1].presses('a'))) {
+  if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
     gameState = "run";
     p1.healthPoints = HEALTH;
     p2.healthPoints = HEALTH;
