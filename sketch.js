@@ -17,6 +17,7 @@ let music;
 let gameState = "intro"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
+const ATTACK_PUSH_DISTANCE = 15;
 const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
@@ -198,11 +199,11 @@ function setup() {
     */
     //===================================================================================//
     
-    //================================ Movement Controls ================================//
-    if ((contros[0] && contros[0].pressing('left')) || kb.pressing('a') && !this.isHurt && this.x - this.width / 2 > 0) {
+    //================================ Movement Controls ================================//    
+    if (((contros[0] && contros[0].pressing('left')) || kb.pressing('a')) && !this.isHurt && this.x - this.w / 2 > 0) {
       this.x -= speed; //Backward
     } 
-    else if ((contros[0] && contros[0].pressing('right')) || (kb.pressing('d')) && !this.isHurt && this.x + (this.width / 2) + this.width < width) {
+    else if (((contros[0] && contros[0].pressing('right')) || kb.pressing('d')) && !this.isHurt && this.x + this.w / 2 + p2.w < width) {
       this.x += speed; //Forward
       this.changeAni('run'); 
     } 
@@ -415,6 +416,7 @@ function setup() {
       // No need to add while loop as we are not checking anything while the hurt animation is running
     
       this.healthPoints -= 1;
+      if(this.x - this.w / 2 - ATTACK_PUSH_DISTANCE15 > 0) { this.x -= ATTACK_PUSH_DISTANCE }
       
       setTimeout(() => {
         this.isHurt = false;
@@ -474,17 +476,16 @@ function setup() {
     
   // Listen to events for p2
   p2.update = async function () {
-    
     speed = 3;
     
     if (this.delay) return;
     
     //================================ Movement Controls ================================//
-    if ((contros[1] && contros[1].pressing('left')) || (kb.pressing(',')) && !this.isHurt && this.x - (this.width / 2) > this.width) {
+    if (((contros[1] && contros[1].pressing('left')) || kb.pressing(',')) && !this.isHurt && this.x - this.w / 2 - p1.w > 0) {
       this.x -= speed; //Forward
       this.changeAni('run');
     } 
-    else if ((contros[1] && contros[1].pressing('right')) || (kb.pressing('.')) && !this.isHurt && this.x + this.width / 2 < width) {
+    else if (((contros[1] && contros[1].pressing('right')) || kb.pressing('.')) && !this.isHurt && this.x + this.w / 2 < width) {
       this.x += speed; //Backward
     } 
     //===================================================================================//
@@ -693,6 +694,7 @@ function setup() {
       // No need to add while loop as we are not checking anything while the hurt animation is running
     
       this.healthPoints -= 1;
+      if(this.x + this.width / 2 + ATTACK_PUSH_DISTANCE < width) { this.x += ATTACK_PUSH_DISTANCE; }
       
       setTimeout(() => {
         this.isHurt = false;
