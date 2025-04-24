@@ -396,7 +396,7 @@ function setup() {
             if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
               print('p1 Hits p2 with special attack')
               p2.hurt = {
-                damage: 2,
+                damage: (p2.healthPoints > 5 ? Math.floor(p2.healthPoints/2) : 2),
                 knockback: ATTACK_PUSH_DISTANCE_3,
               }
             }
@@ -442,6 +442,7 @@ function setup() {
           knockback: 0,
         };
         this.delay = false;
+        p2.delay = true;
         this.hitTime = undefined;
         if(this.healthPoints <= 0) { 
           this.delay = true;
@@ -697,7 +698,7 @@ function setup() {
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
               print('p2 Hits p1 with special attack')
               p1.hurt = {
-                damage: 2,
+                damage: (p1.healthPoints > 5 ? Math.floor(p1.healthPoints/2) : 2),
                 knockback: ATTACK_PUSH_DISTANCE_3,
               }
             }
@@ -746,6 +747,7 @@ function setup() {
         this.hitTime = undefined;
         if(this.healthPoints <= 0) { 
           this.delay = true;
+          p1.delay = true;
           p2_death_sfx[Math.floor(Math.random() * 2)].play();
           this.changeAni('death');
           // To fix looping issue
@@ -822,6 +824,9 @@ function runGame() {
 }
 
 function endGame() {  
+  p1.delay = true;
+  p2.delay = true;
+  
   noStroke();  
   fill('red');
   textAlign(CENTER);
