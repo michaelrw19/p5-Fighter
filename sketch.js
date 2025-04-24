@@ -21,8 +21,9 @@ const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = true; // set to false when playing
-const HEALTH = 1;
+const HEALTH = 100;
 const DURATION = 600;
+const DEFAULT_HITBOX_W = 20;
 
 let timer = DURATION;
 let lastTime = 0;
@@ -37,6 +38,18 @@ function preload() {
   p1_attack_2 = loadAnimation(imageSequence("assets/p1/attack_2/", 6))
   p1_attack_2.frameDelay = 4;
   p1_attack_2_sfx = [loadSound("assets/p1/attack_2/sfx1.wav"), loadSound("assets/p1/attack_2/sfx2.wav"), loadSound("assets/p1/attack_2/sfx3.wav")];
+  
+  p1_attack_3 = loadAnimation(imageSequence("assets/p1/attack_3/", 8));
+  p1_attack_3.frameDelay = 4;
+  p1_attack_3_sfx = loadSound("assets/p1/attack_3/sfx.wav");
+  
+  p1_attack_4 = loadAnimation(imageSequence("assets/p1/attack_4/", 6));
+  p1_attack_4.frameDelay = 5;
+  p1_attack_4_sfx = loadSound("assets/p1/attack_4/sfx.wav");
+  
+  p1_special_attack = loadAnimation(imageSequence("assets/p1/special_attack/", 8));
+  p1_special_attack.frameDelay = 6;
+  p1_special_attack_sfx = loadSound("assets/p1/special_attack/sfx.wav");
   
   p1_death = loadAnimation(imageSequence("assets/p1/death/", 6))
   p1_death.frameDelay = 8;
@@ -61,6 +74,18 @@ function preload() {
   p2_attack_2 = loadAnimation(imageSequence("assets/p2/attack_2/", 6))
   p2_attack_2.frameDelay = 4;
   p2_attack_2_sfx = [loadSound("assets/p2/attack_2/sfx1.wav"), loadSound("assets/p2/attack_2/sfx2.wav"), loadSound("assets/p2/attack_2/sfx3.wav")];
+  
+  p2_attack_3 = loadAnimation(imageSequence("assets/p2/attack_3/", 8));
+  p2_attack_3.frameDelay = 4;
+  p2_attack_3_sfx = loadSound("assets/p2/attack_3/sfx.wav");
+  
+  p2_attack_4 = loadAnimation(imageSequence("assets/p2/attack_4/", 6));
+  p2_attack_4.frameDelay = 5;
+  p2_attack_4_sfx = loadSound("assets/p2/attack_4/sfx.wav");
+  
+  p2_special_attack = loadAnimation(imageSequence("assets/p2/special_attack/", 8));
+  p2_special_attack.frameDelay = 6;
+  p2_special_attack_sfx = loadSound("assets/p2/special_attack/sfx.wav");  
   
   p2_death = loadAnimation(imageSequence("assets/p2/death/", 6))
   p2_death.frameDelay = 12;
@@ -88,6 +113,7 @@ function preload() {
 function setup() {
   new Canvas(1080, 1020);
   print(windowWidth, windowHeight)
+  displayMode('centered')
   
   // p1 Setup
   p1 = new Sprite();  
@@ -98,10 +124,14 @@ function setup() {
   p1.rotationLock = true;
   p1.healthPoints = HEALTH;
   p1.hitTime = undefined;
+  p1.specialAttackUsed = false;
   
   //Add animations
   p1.addAni('attack_1', p1_attack_1);
   p1.addAni('attack_2', p1_attack_2);
+  p1.addAni('attack_3', p1_attack_3);
+  p1.addAni('attack_4', p1_attack_4);
+  p1.addAni('special_attack', p1_special_attack);
   p1.addAni('death', p1_death);
   p1.addAni('hurt', p1_hurt);
   p1.addAni('run', p1_run);
@@ -112,8 +142,8 @@ function setup() {
   p1.delay = true;
   
   // Define Hitbox
-  p1.hitbox = createSprite(p1.x + 40, p1.y, 20, 60);
-  p1.hitbox.visible = false;
+  p1.hitbox = createSprite(p1.x + p1.w/2, p1.y, DEFAULT_HITBOX_W, 60);
+  p1.hitbox.visible = true;
   // Hitbox will always follow the movement of p1, see runGame()
   
   // Listen to events for p1
@@ -189,7 +219,7 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        if (this.ani.frame >= 4) {
+        if (this.ani.frame >= 4 && this.ani.frame <= 5) {
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime == p2.hitTime || this.hitTime < p2.hitTime || p2.hitTime == undefined) { 
@@ -254,6 +284,125 @@ function setup() {
         this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); 
     }
+    
+    // ATTACK_3
+    else if ((contros[0] && contros[0].presses('b')) || kb.presses('e')) {
+      this.hitTime = Math.floor(millis()); 
+      print('p1 hittime: ', this.hitTime);
+      p1_attack_3_sfx.play(); 
+      this.changeAni(['attack_3', 'idle']);
+      let aniDuration = (8 * p1_attack_3.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        if (this.ani.frame >= 3) { // Stricly check collision at frame 3 onwards
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
+            if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
+              print('p1 Hits p2 with attack 1')
+              p2.isHurt = true; // set p2 hurt flag to true
+            }
+          }
+        }
+        else {
+          this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }
+    
+    // ATTACK_4
+    else if ((contros[0] && contros[0].presses('a')) || kb.presses('r')) {
+      this.hitTime = Math.floor(millis()); 
+      print('p1 hittime: ', this.hitTime);
+      p1_attack_4_sfx.play(); 
+      this.changeAni(['attack_4', 'idle']);
+      let aniDuration = (6 * p1_attack_4.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        if (this.ani.frame == 3 || this.ani.frame == 4) { // Stricly check collision at frame 3 and 4
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
+            if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
+              print('p1 Hits p2 with attack 1')
+              p2.isHurt = true; // set p2 hurt flag to true
+            }
+          }
+        }
+        else {
+          this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }
+    
+    // SPECIAL_ATTACK
+    else if (((contros[0] && contros[0].presses('rt')) || kb.presses('t')) && this.healthPoints <= 100 && !this.specialAttackUsed) {
+      this.hitbox.w = 40;
+      this.hitTime = Math.floor(millis()); 
+      print('p1 hittime: ', this.hitTime);
+      p1_special_attack_sfx.play(); 
+      this.changeAni(['special_attack', 'idle']);
+      let aniDuration = (8 * p1_special_attack.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        this.hitbox.visible = true;
+        if (this.ani.frame == 4 || this.ani.frame == 5 || this.ani.frame == 6) { // Stricly check collision at frame 4, 5, and 6
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
+            if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
+              print('p1 Hits p2 with special attack')
+              p2.isHurt = true; // set p2 hurt flag to true
+            }
+          }
+        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.hitbox.w = DEFAULT_HITBOX_W;
+        this.specialAttackUsed = false;
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }
+    
     //===================================================================================//
     
     //================================ Hurt Listener ================================//
@@ -285,8 +434,7 @@ function setup() {
         } 
       }, HURT_DELAY_DURATION); // Cooldown in ms
     }
-    //===================================================================================//
-    
+    //===================================================================================//  
     else {
       this.changeAni('idle')
     }
@@ -306,6 +454,9 @@ function setup() {
   
   p2.addAni('attack_1', p2_attack_1);
   p2.addAni('attack_2', p2_attack_2);
+  p2.addAni('attack_3', p2_attack_3);
+  p2.addAni('attack_4', p2_attack_4);
+  p2.addAni('special_attack', p2_special_attack);
   p2.addAni('death', p2_death);
   p2.addAni('hurt', p2_hurt);
   p2.addAni('run', p2_run);
@@ -317,8 +468,8 @@ function setup() {
   p2.delay = true;
   
   // Define Hitbox
-  p2.hitbox = createSprite(p2.x - 40, p2.y, 20, 60);
-  p2.hitbox.visible = false;
+  p2.hitbox = createSprite(p2.x - p2.w/2, p2.y, DEFAULT_HITBOX_W, 60);
+  p2.hitbox.visible = true;
     
   // Listen to events for p2
   p2.update = async function () {
@@ -390,7 +541,7 @@ function setup() {
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
-              print('p2 Hits p1 with attack 1')
+              print('p2 Hits p1 with attack 2')
               p1.isHurt = true; // set p1 hurt flag to true
             }
           }
@@ -412,6 +563,124 @@ function setup() {
         this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); 
     }
+
+    // ATTACK_3
+    else if ((contros[1] && contros[1].presses('b')) || kb.presses('e')) {
+      this.hitTime = Math.floor(millis()); 
+      print('p2 hittime: ', this.hitTime);
+      p2_attack_3_sfx.play(); 
+      this.changeAni(['attack_3', 'idle']);
+      let aniDuration = (8 * p2_attack_3.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        if (this.ani.frame >= 3) { // Stricly check collision at frame 3 onwards
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
+            if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
+              print('p2 Hits p1 with attack 3')
+              p1.isHurt = true; // set p2 hurt flag to true
+            }
+          }
+        }
+        else {
+          this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }    
+    
+    // ATTACK_4
+    else if ((contros[1] && contros[1].presses('a')) || kb.presses('e')) {
+      this.hitTime = Math.floor(millis()); 
+      print('p2 hittime: ', this.hitTime);
+      p2_attack_4_sfx.play(); 
+      this.changeAni(['attack_4', 'idle']);
+      let aniDuration = (6 * p2_attack_4.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        if (this.ani.frame == 3 || this.ani.frame == 4) { // Stricly check collision at frame 3 and 4
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
+            if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
+              print('p2 Hits p1 with attack 4')
+              p1.isHurt = true; // set p2 hurt flag to true
+            }
+          }
+        }
+        else {
+          this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }
+    
+    // SPECIAL_ATTACK
+    else if (((contros[1] && contros[1].presses('rt')) || kb.presses('t')) && this.healthPoints <= 100 && !this.specialAttackUsed) {
+      this.hitbox.w = 40;
+      this.hitTime = Math.floor(millis()); 
+      print('p2 hittime: ', this.hitTime);
+      p2_special_attack_sfx.play(); 
+      this.changeAni(['special_attack', 'idle']);
+      let aniDuration = (8 * p2_special_attack.frameDelay) * (1000 / 60); 
+      let startTime = Date.now(); 
+      this.delay = true; 
+      // Collision Detection
+      while (Date.now() - startTime < aniDuration) {
+        if (this.ani.frame == 4 || this.ani.frame == 5 || this.ani.frame == 6) { // Stricly check collision at frame 4, 5, and 6
+          this.hitbox.visible = SHOW_HITBOX; 
+          if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
+            if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
+              print('p2 Hits p1 with special attack')
+              p1.isHurt = true; // set p1 hurt flag to true
+            }
+          }
+        }
+        else {
+          this.hitbox.visible = false;
+        }
+        if (this.isHurt) { 
+          this.changeAni('hurt'); 
+          this.ani.frame = 0;
+          this.delay = false; 
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 16)); 
+      }
+      // Attack Delay
+      setTimeout(() => {
+        this.hitbox.w = DEFAULT_HITBOX_W;
+        this.specialAttackUsed = false;
+        this.delay = false;
+        this.hitTime = undefined;
+      }, ATTACK_DELAY_DURATION); 
+    }    
+    
     //===================================================================================//
     
     //================================ Hurt Listener ================================//
@@ -457,11 +726,6 @@ function setup() {
   p1.hitbox.overlaps(p2.hitbox);
   p2.hitbox.overlaps(p1);
   p2.hitbox.overlaps(p1.hitbox);
-  
-  // disable all the automatic stuff
-  // allSprites.autoDraw = false;
-  // allSprites.autoUpdate = false;
-  // world.autoStep = false; 
   
   allSprites.debug = SHOW_HITBOX; // Set to false when playing
 }
@@ -545,10 +809,10 @@ function runGame() {
   text(("p2 Health: " + p2.healthPoints), width, height*0.34);
   
   //Hitbox Behaviours, 41 makes gives enough space to prevent it from pushing
-  p1.hitbox.x = p1.x + 41; //Relative to p1
+  p1.hitbox.x = p1.x + p1.w/2 + p1.hitbox.w/2 + 1; //Relative to p1
   p1.hitbox.y = p1.y;
   
-  p2.hitbox.x = p2.x - 41; //Relative to p2
+  p2.hitbox.x = p2.x - p2.w/2 - p2.hitbox.w/2 - 1; //Relative to p2
   p2.hitbox.y = p2.y;
   
 }
