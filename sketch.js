@@ -21,8 +21,8 @@ const ATTACK_PUSH_DISTANCE = 15;
 const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
-const SHOW_HITBOX = true; // set to false when playing
-const HEALTH = 3;
+const SHOW_HITBOX = false; // set to false when playing
+const HEALTH = 10;
 const DURATION = 60;
 const DEFAULT_HITBOX_W = 20;
 const SPECIAL_ATTACK_MIN_HEALTH = 2;
@@ -110,7 +110,6 @@ function preload() {
   music = loadSound("assets/music.mp3");
   
 }
-
 // Setup
 function setup() {
   new Canvas(1080, 1020);
@@ -145,8 +144,7 @@ function setup() {
   
   // Define Hitbox
   p1.hitbox = createSprite(p1.x + p1.w/2, p1.y, DEFAULT_HITBOX_W, 60);
-  p1.hitbox.visible = true;
-  // Hitbox will always follow the movement of p1, see runGame()
+  p1.hitbox.visible = SHOW_HITBOX;
   
   // Listen to events for p1
   p1.update = async function () {
@@ -230,10 +228,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
-        
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -269,9 +266,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -307,9 +304,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -345,9 +342,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -375,7 +372,6 @@ function setup() {
       this.delay = true; 
       // Collision Detection
       while (Date.now() - startTime < aniDuration) {
-        this.hitbox.visible = true;
         if (this.ani.frame == 4 || this.ani.frame == 5 || this.ani.frame == 6) { // Stricly check collision at frame 4, 5, and 6
           this.hitbox.visible = SHOW_HITBOX; 
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
@@ -416,7 +412,7 @@ function setup() {
       // No need to add while loop as we are not checking anything while the hurt animation is running
     
       this.healthPoints -= 1;
-      if(this.x - this.w / 2 - ATTACK_PUSH_DISTANCE15 > 0) { this.x -= ATTACK_PUSH_DISTANCE }
+      if(this.x - this.w / 2 - ATTACK_PUSH_DISTANCE > 0) { this.x -= ATTACK_PUSH_DISTANCE }
       
       setTimeout(() => {
         this.isHurt = false;
@@ -472,7 +468,7 @@ function setup() {
   
   // Define Hitbox
   p2.hitbox = createSprite(p2.x - p2.w/2, p2.y, DEFAULT_HITBOX_W, 60);
-  p2.hitbox.visible = true;
+  p2.hitbox.visible = SHOW_HITBOX;
     
   // Listen to events for p2
   p2.update = async function () {
@@ -511,9 +507,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -548,9 +544,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -586,9 +582,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -624,9 +620,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -663,9 +659,9 @@ function setup() {
             }
           }
         }
-        else {
-          this.hitbox.visible = false;
-        }
+        // else {
+        //   this.hitbox.visible = false;
+        // }
         if (this.isHurt) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
@@ -735,7 +731,6 @@ function setup() {
 
 ////////////////////////////////////////////////////
 function draw() {   
-  //music.play(); add this to intro state
   background('black')
   image(cityImg, 0, 0, width, height, 0, 0, cityImg.width, cityImg.height, CONTAIN);
   if (gameState == "intro") introGame();
@@ -758,9 +753,8 @@ function introGame() {
     gameState = "run";
     p1.delay = false;
     p2.delay = false;
+    music.setVolume(0.5);
     music.play();
-    //music.setVolume(0.1);
-    music.setVolume(0);
   }
 }
 
