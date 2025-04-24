@@ -17,12 +17,14 @@ let music;
 let gameState = "intro"
 
 const ATTACK_DELAY_DURATION = 500; // in ms
-const ATTACK_PUSH_DISTANCE = 15;
+const ATTACK_PUSH_DISTANCE_1 = 15;
+const ATTACK_PUSH_DISTANCE_2 = 30;
+const ATTACK_PUSH_DISTANCE_3 = 120;
 const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 10;
+const HEALTH = 10
 const DURATION = 60;
 const DEFAULT_HITBOX_W = 20;
 const SPECIAL_ATTACK_MIN_HEALTH = 2;
@@ -126,6 +128,10 @@ function setup() {
   p1.healthPoints = HEALTH;
   p1.hitTime = undefined;
   p1.specialAttackUsed = false;
+  p1.hurt = {
+    damage: 0,
+    knockback: 0,
+  }
   
   //Add animations
   p1.addAni('attack_1', p1_attack_1);
@@ -198,10 +204,10 @@ function setup() {
     //===================================================================================//
     
     //================================ Movement Controls ================================//    
-    if (((contros[0] && contros[0].pressing('left')) || kb.pressing('a')) && !this.isHurt && this.x - this.w / 2 > 0) {
+    if (((contros[0] && contros[0].pressing('left')) || kb.pressing('a')) && this.hurt.damage == 0 && this.x - this.w / 2 > 0) {
       this.x -= speed; //Backward
     } 
-    else if (((contros[0] && contros[0].pressing('right')) || kb.pressing('d')) && !this.isHurt && this.x + this.w / 2 + p2.w < width) {
+    else if (((contros[0] && contros[0].pressing('right')) || kb.pressing('d')) && this.hurt.damage == 0 && this.x + this.w / 2 + p2.w < width) {
       this.x += speed; //Forward
       this.changeAni('run'); 
     } 
@@ -224,14 +230,17 @@ function setup() {
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime == p2.hitTime || this.hitTime < p2.hitTime || p2.hitTime == undefined) { 
               print('p1 Hits p2 with attack 1')
-              p2.isHurt = true; // set p2 hurt flag to true
+              p2.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_1,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -262,14 +271,17 @@ function setup() {
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
               print('p1 Hits p2 with attack 1')
-              p2.isHurt = true; // set p2 hurt flag to true
+              p2.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_1,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -300,14 +312,17 @@ function setup() {
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
               print('p1 Hits p2 with attack 1')
-              p2.isHurt = true; // set p2 hurt flag to true
+              p2.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_2,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -338,14 +353,17 @@ function setup() {
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
               print('p1 Hits p2 with attack 1')
-              p2.isHurt = true; // set p2 hurt flag to true
+              p2.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_2,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -377,14 +395,17 @@ function setup() {
           if (this.hitbox.overlapping(p2) && !p2.isHurt) { 
             if(this.hitTime < p2.hitTime || p2.hitTime == undefined || this.hitTime == p2.hitTime) { 
               print('p1 Hits p2 with special attack')
-              p2.isHurt = true; // set p2 hurt flag to true
+              p2.hurt = {
+                damage: 2,
+                knockback: ATTACK_PUSH_DISTANCE_3,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -404,21 +425,25 @@ function setup() {
     //===================================================================================//
     
     //================================ Hurt Listener ================================//
-    else if (this.isHurt) {  
+    else if (this.hurt.damage != 0) {  
       this.changeAni(['hurt', 'idle']); 
       this.delay = true; 
       p1_hurt_sfx[Math.floor(Math.random() * 3)].play();
       
       // No need to add while loop as we are not checking anything while the hurt animation is running
     
-      this.healthPoints -= 1;
-      if(this.x - this.w / 2 - ATTACK_PUSH_DISTANCE > 0) { this.x -= ATTACK_PUSH_DISTANCE }
+      this.healthPoints -= this.hurt.damage;
+      if(this.x - this.w / 2 - this.hurt.knockback > 0) { this.x -= this.hurt.knockback }
+      else { this.x = this.w / 2; }
       
       setTimeout(() => {
-        this.isHurt = false;
+        this.hurt = {
+          damage: 0,
+          knockback: 0,
+        };
         this.delay = false;
         this.hitTime = undefined;
-        if(this.healthPoints == 0) { 
+        if(this.healthPoints <= 0) { 
           this.delay = true;
           p1_death_sfx[Math.floor(Math.random() * 2)].play();
           this.changeAni('death');
@@ -450,6 +475,10 @@ function setup() {
   p2.rotationLock = true;
   p2.healthPoints = HEALTH;
   p2.hitTime = undefined;
+  p2.hurt = {
+    damage: 0,
+    knockback: 0,
+  }
   
   p2.addAni('attack_1', p2_attack_1);
   p2.addAni('attack_2', p2_attack_2);
@@ -477,11 +506,11 @@ function setup() {
     if (this.delay) return;
     
     //================================ Movement Controls ================================//
-    if (((contros[1] && contros[1].pressing('left')) || kb.pressing(',')) && !this.isHurt && this.x - this.w / 2 - p1.w > 0) {
+    if (((contros[1] && contros[1].pressing('left')) || kb.pressing(',')) && this.hurt.damage == 0 && this.x - this.w / 2 - p1.w > 0) {
       this.x -= speed; //Forward
       this.changeAni('run');
     } 
-    else if (((contros[1] && contros[1].pressing('right')) || kb.pressing('.')) && !this.isHurt && this.x + this.w / 2 < width) {
+    else if (((contros[1] && contros[1].pressing('right')) || kb.pressing('.')) && this.hurt.damage == 0 && this.x + this.w / 2 < width) {
       this.x += speed; //Backward
     } 
     //===================================================================================//
@@ -503,14 +532,17 @@ function setup() {
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime == p1.hitTime || this.hitTime < p1.hitTime || p1.hitTime == undefined) { 
               print('p2 Hits p1 with attack 1')
-              p1.isHurt = true; // set p1 hurt flag to true
+              p1.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_1,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -540,14 +572,17 @@ function setup() {
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
               print('p2 Hits p1 with attack 2')
-              p1.isHurt = true; // set p1 hurt flag to true
+              p1.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_1,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -578,14 +613,17 @@ function setup() {
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
               print('p2 Hits p1 with attack 3')
-              p1.isHurt = true; // set p2 hurt flag to true
+              p1.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_2,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -616,14 +654,17 @@ function setup() {
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
               print('p2 Hits p1 with attack 4')
-              p1.isHurt = true; // set p2 hurt flag to true
+              p1.hurt = {
+                damage: 1,
+                knockback: ATTACK_PUSH_DISTANCE_2,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -655,14 +696,17 @@ function setup() {
           if (this.hitbox.overlapping(p1) && !p1.isHurt) { 
             if(this.hitTime < p1.hitTime || p1.hitTime == undefined || this.hitTime == p1.hitTime) { 
               print('p2 Hits p1 with special attack')
-              p1.isHurt = true; // set p1 hurt flag to true
+              p1.hurt = {
+                damage: 2,
+                knockback: ATTACK_PUSH_DISTANCE_3,
+              }
             }
           }
         }
         // else {
         //   this.hitbox.visible = false;
         // }
-        if (this.isHurt) { 
+        if (this.hurt.damage != 0) { 
           this.changeAni('hurt'); 
           this.ani.frame = 0;
           this.delay = false; 
@@ -682,21 +726,25 @@ function setup() {
     //===================================================================================//
     
     //================================ Hurt Listener ================================//
-    else if (this.isHurt) {
+    else if (this.hurt.damage != 0) {
       this.changeAni(['hurt', 'idle']); 
       this.delay = true; 
       p2_hurt_sfx[Math.floor(Math.random() * 3)].play();
       
       // No need to add while loop as we are not checking anything while the hurt animation is running
     
-      this.healthPoints -= 1;
-      if(this.x + this.width / 2 + ATTACK_PUSH_DISTANCE < width) { this.x += ATTACK_PUSH_DISTANCE; }
+      this.healthPoints -= this.hurt.damage;
+      if(this.x + this.width / 2 + this.hurt.knockback < width) { this.x += this.hurt.knockback; }
+      else { this.x = width - this.w / 2; }
       
       setTimeout(() => {
-        this.isHurt = false;
+        this.hurt = {
+          damage: 0,
+          knockback: 0,
+        };
         this.delay = false;
         this.hitTime = undefined;
-        if(this.healthPoints == 0) { 
+        if(this.healthPoints <= 0) { 
           this.delay = true;
           p2_death_sfx[Math.floor(Math.random() * 2)].play();
           this.changeAni('death');
@@ -798,9 +846,9 @@ function endGame() {
   text("Press start to try again", width/2, height*0.25);
   
   textAlign(LEFT)
-  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  text("p1 Health: " + (p1.healthPoints <= 0 ? 0 : p1.healthPoints), 0, height*0.34);
   textAlign(RIGHT)
-  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
+  text("p2 Health: " + (p2.healthPoints <= 0 ? 0 : p2.healthPoints), width, height*0.34);
   
   if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
     gameState = "run";
@@ -808,6 +856,8 @@ function endGame() {
     p2.healthPoints = HEALTH;
     p1.delay = false;
     p2.delay = false;
+    p1.specialAttackUsed = false;
+    p2.specialAttackUsed = false;
     p1.x = width * 0.4;
     p1.y = height * 0.5;
     p2.x = width * 0.6;
