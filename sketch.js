@@ -21,9 +21,10 @@ const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = true; // set to false when playing
-const HEALTH = 100;
-const DURATION = 600;
+const HEALTH = 3;
+const DURATION = 60;
 const DEFAULT_HITBOX_W = 20;
+const SPECIAL_ATTACK_MIN_HEALTH = 2;
 
 let timer = DURATION;
 let lastTime = 0;
@@ -362,7 +363,7 @@ function setup() {
     }
     
     // SPECIAL_ATTACK
-    else if (((contros[0] && contros[0].presses('rt')) || kb.presses('t')) && this.healthPoints <= 100 && !this.specialAttackUsed) {
+    else if (((contros[0] && contros[0].presses('rt')) || kb.presses(' ')) && this.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !this.specialAttackUsed) {
       this.hitbox.w = 40;
       this.hitTime = Math.floor(millis()); 
       print('p1 hittime: ', this.hitTime);
@@ -397,7 +398,7 @@ function setup() {
       // Attack Delay
       setTimeout(() => {
         this.hitbox.w = DEFAULT_HITBOX_W;
-        this.specialAttackUsed = false;
+        this.specialAttackUsed = true;
         this.delay = false;
         this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); 
@@ -565,7 +566,7 @@ function setup() {
     }
 
     // ATTACK_3
-    else if ((contros[1] && contros[1].presses('b')) || kb.presses('e')) {
+    else if ((contros[1] && contros[1].presses('b')) || kb.presses(';')) {
       this.hitTime = Math.floor(millis()); 
       print('p2 hittime: ', this.hitTime);
       p2_attack_3_sfx.play(); 
@@ -603,7 +604,7 @@ function setup() {
     }    
     
     // ATTACK_4
-    else if ((contros[1] && contros[1].presses('a')) || kb.presses('e')) {
+    else if ((contros[1] && contros[1].presses('a')) || kb.presses("'")) {
       this.hitTime = Math.floor(millis()); 
       print('p2 hittime: ', this.hitTime);
       p2_attack_4_sfx.play(); 
@@ -641,7 +642,7 @@ function setup() {
     }
     
     // SPECIAL_ATTACK
-    else if (((contros[1] && contros[1].presses('rt')) || kb.presses('t')) && this.healthPoints <= 100 && !this.specialAttackUsed) {
+    else if (((contros[1] && contros[1].presses('rt')) || kb.presses('enter')) && this.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !this.specialAttackUsed) {
       this.hitbox.w = 40;
       this.hitTime = Math.floor(millis()); 
       print('p2 hittime: ', this.hitTime);
@@ -675,7 +676,7 @@ function setup() {
       // Attack Delay
       setTimeout(() => {
         this.hitbox.w = DEFAULT_HITBOX_W;
-        this.specialAttackUsed = false;
+        this.specialAttackUsed = true;
         this.delay = false;
         this.hitTime = undefined;
       }, ATTACK_DELAY_DURATION); 
@@ -749,26 +750,7 @@ function introGame() {
   textAlign(CENTER);
   text("Press the start button to begin", width/2, height*0.15);
   
-  textSize(24);
-  // Print Movesets
-  if (contros[0]) {
-      textAlign(CENTER)
-      text("Left and Right to move\nX and Y to attack", width/2, height*0.20);
-  }
-  else {
-      textAlign(LEFT)
-      text("Q and W to attack\nA and D to move", 0, height*0.25);
-      textAlign(RIGHT)
-      text("K and L to attack\n, and . to move", width, height*0.25);
-  }
-  
-  // Print Health and Time
-  textAlign(LEFT)
-  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
-  textAlign(CENTER)
-  text((timer), width*0.5, height*0.34);
-  textAlign(RIGHT)
-  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
+  drawTextInfo();
   
   if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
     gameState = "run";
@@ -784,31 +766,9 @@ function introGame() {
 function runGame() {
   countdown();
     
-  fill('white');
-  textSize(24);
-  textFont("Arial");
-  // Print Movesets
-  if (contros[0]) {
-      textAlign(CENTER)
-      text("Left and Right to move\nX and Y to attack", width/2, height*0.20);
-  }
-  else {
-      textAlign(LEFT)
-      text("Q and W to attack\nA and D to move", 0, height*0.25);
-      textAlign(RIGHT)
-      text("K and L to attack\n, and . to move", width, height*0.25);
-  }
+  drawTextInfo();
   
-  
-  // Print Health and Time
-  textAlign(LEFT)
-  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
-  textAlign(CENTER)
-  text((timer), width*0.5, height*0.34);
-  textAlign(RIGHT)
-  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
-  
-  //Hitbox Behaviours, 41 makes gives enough space to prevent it from pushing
+  //Hitbox Behaviours
   p1.hitbox.x = p1.x + p1.w/2 + p1.hitbox.w/2 + 1; //Relative to p1
   p1.hitbox.y = p1.y;
   
@@ -882,4 +842,53 @@ function countdown() {
     p1.delay = true;
     p2.delay = true;
   }
+}
+
+function drawTextInfo() {
+  fill('white');
+  textSize(24);
+  textFont("Arial");
+
+  // Print Movesets
+  if (contros[0]) {
+    textAlign(CENTER)
+    text("Left and Right to move\nX, Y, B, A to attack", width/2, height*0.20);
+    
+    // Print Special Attack
+    fill('red');
+    if (p1.healthPoints <= 2 && !p1.specialAttackUsed) {
+      textAlign(LEFT)
+      text(("Press RT for Special Attack"), 0, height*0.31);
+    }
+    if (p2.healthPoints <= 2 && !p2.specialAttackUsed) {
+      textAlign(RIGHT)
+      text(("Press RT for Special Attack"), width, height*0.31);
+    }  
+    fill('white');
+  }
+  else {
+      textAlign(LEFT)
+      text("Q, W, E, R to attack\nA and D to move", 0, height*0.25);
+      if (p1.healthPoints <= 2 && !p1.specialAttackUsed) {
+        fill('red');
+        text(("Press Space for Special Attack"), 0, height*0.31);
+        fill('white');
+      }
+      textAlign(RIGHT)
+      text("K, L, ;, and ' to attack\n, and . to move", width, height*0.25);
+      if (p2.healthPoints <= 2 && !p2.specialAttackUsed) {
+        fill('red');
+        text(("Press Enter for Special Attack"), width, height*0.31);
+        fill('white');
+      }  
+  }
+  
+  // Print Health and Time
+  fill('white');
+  textAlign(LEFT)
+  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  textAlign(CENTER)
+  text((timer), width*0.5, height*0.34);
+  textAlign(RIGHT)
+  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
 }
