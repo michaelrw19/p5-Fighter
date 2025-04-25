@@ -3,7 +3,6 @@
 // Map from: https://craftpix.net/freebies/free-pixel-art-street-2d-backgrounds/
 // Music from: zerothree [bit-8] - Fight Song [8-Bit; VRC6] - Eve (https://www.youtube.com/watch?v=wbJQx9aK4KI)
 // SFX from: Tekken 8
-// Font:
 
 let p1;
 let p1Ani;
@@ -25,7 +24,7 @@ const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
 const MAX_HEALTH = 10
-const DURATION = 60;
+const DURATION = 120;
 const DEFAULT_HITBOX_W = 20;
 const SPECIAL_ATTACK_MIN_HEALTH = 3;
 
@@ -164,11 +163,15 @@ function setup() {
       this.hitTime = Math.floor(millis()); // Track hittime
       p1_attack_1_sfx[Math.floor(Math.random() * 3)].play(); // Play sound effect
       this.changeAni(['attack_1', 'idle']); // Run attack animation with idle after it
+      !!! Formula to calculate duration taken from ChatGPT !!!
       let aniDuration = (6 * p1_attack_1.frameDelay) * (1000 / 60); // Estimate animation duration using: (totalFrame * frameDelay) * (1000ms / 60fps)
       let startTime = Date.now(); // Start a timer to count the animation duration
       this.delay = true; // Set delay to true to prevent other animation to take over
       
       // Check for collision or enemy hit while animation is running
+      
+      !!! while loop idea with Promise at the end referenced from ChatGPT !!!
+      
       while (Date.now() - startTime < aniDuration) { // Stop loop until animation duration runs out
         // Only check for collision when frame it >= 4 (punch about to land)
         if (this.ani.frame >= 4) {
@@ -887,11 +890,11 @@ function drawTextInfo() {
     
     // Print Special Attack
     fill('red');
-    if (p1.healthPoints <= 2 && !p1.specialAttackUsed) {
+    if (p1.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !p1.specialAttackUsed) {
       textAlign(LEFT)
       text(("Press RT for Special Attack"), 0, height*0.31);
     }
-    if (p2.healthPoints <= 2 && !p2.specialAttackUsed) {
+    if (p2.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !p2.specialAttackUsed) {
       textAlign(RIGHT)
       text(("Press RT for Special Attack"), width, height*0.31);
     }  
@@ -900,14 +903,14 @@ function drawTextInfo() {
   else {
       textAlign(LEFT)
       text("Q, W, E, R to attack\nA and D to move", 0, height*0.25);
-      if (p1.healthPoints <= 2 && !p1.specialAttackUsed) {
+      if (p1.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !p1.specialAttackUsed) {
         fill('red');
         text(("Press Space for Special Attack"), 0, height*0.31);
         fill('white');
       }
       textAlign(RIGHT)
       text("K, L, ;, and ' to attack\n, and . to move", width, height*0.25);
-      if (p2.healthPoints <= 2 && !p2.specialAttackUsed) {
+      if (p2.healthPoints <= SPECIAL_ATTACK_MIN_HEALTH && !p2.specialAttackUsed) {
         fill('red');
         text(("Press Enter for Special Attack"), width, height*0.31);
         fill('white');
