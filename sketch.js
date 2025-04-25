@@ -24,10 +24,10 @@ const HURT_DELAY_DURATION = 450; // in ms
 const CHAR_W = 60;
 const CHAR_H = 150;
 const SHOW_HITBOX = false; // set to false when playing
-const HEALTH = 10
+const MAX_HEALTH = 10
 const DURATION = 60;
 const DEFAULT_HITBOX_W = 20;
-const SPECIAL_ATTACK_MIN_HEALTH = 2;
+const SPECIAL_ATTACK_MIN_HEALTH = 3;
 
 let timer = DURATION;
 let lastTime = 0;
@@ -125,7 +125,7 @@ function setup() {
   p1.x = width * 0.4;
   p1.y = height * 0.5;
   p1.rotationLock = true;
-  p1.healthPoints = HEALTH;
+  p1.healthPoints = MAX_HEALTH;
   p1.hitTime = undefined;
   p1.specialAttackUsed = false;
   p1.hurt = {
@@ -474,7 +474,7 @@ function setup() {
   p2.y = height * 0.5;
   p2.scale.x = -1;
   p2.rotationLock = true;
-  p2.healthPoints = HEALTH;
+  p2.healthPoints = MAX_HEALTH;
   p2.hitTime = undefined;
   p2.hurt = {
     damage: 0,
@@ -800,11 +800,7 @@ function introGame() {
   drawTextInfo();
   
   if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
-    gameState = "run";
-    p1.delay = false;
-    p2.delay = false;
-    music.setVolume(0.5);
-    music.play();
+    resetGameState()
   }
 }
 
@@ -850,27 +846,11 @@ function endGame() {
   text(winner, width/2, height*0.20);
   text("Press start to try again", width/2, height*0.25);
   
-  textAlign(LEFT)
-  text("p1 Health: " + (p1.healthPoints <= 0 ? 0 : p1.healthPoints), 0, height*0.34);
-  textAlign(RIGHT)
-  text("p2 Health: " + (p2.healthPoints <= 0 ? 0 : p2.healthPoints), width, height*0.34);
+  // Draw Health and Time
+  drawHealthBar(p1.healthPoints, p2.healthPoints);
   
   if (keyIsPressed || (contros[0] && contros[0].presses('start')) || (contros[1] && contros[1].presses('start'))) {
-    gameState = "run";
-    p1.healthPoints = HEALTH;
-    p2.healthPoints = HEALTH;
-    p1.delay = false;
-    p2.delay = false;
-    p1.specialAttackUsed = false;
-    p2.specialAttackUsed = false;
-    p1.x = width * 0.4;
-    p1.y = height * 0.5;
-    p2.x = width * 0.6;
-    p2.y = height * 0.5;
-    timer = DURATION;
-    
-    music.stop();
-    music.play();
+    resetGameState();
   }
 }
 
@@ -934,12 +914,56 @@ function drawTextInfo() {
       }  
   }
   
-  // Print Health and Time
-  fill('white');
-  textAlign(LEFT)
-  text(("p1 Health: " + p1.healthPoints), 0, height*0.34);
+  // Draw Health and Time
+  drawHealthBar(p1.healthPoints, p2.healthPoints);
+  
   textAlign(CENTER)
+  timer <= 10 ? fill('red') : fill('white');
   text((timer), width*0.5, height*0.34);
-  textAlign(RIGHT)
-  text(("p2 Health: " + p2.healthPoints), width, height*0.34);
+}
+
+function drawHealthBar(health_p1, health_p2) {
+  // Background bar
+  let barWidth = 300;
+  let barHeight = 25;
+  
+  fill('gray');
+  noStroke();
+  rect(0, height*0.32, barWidth, barHeight, 5);
+  rect(width - barWidth, height*0.32, barWidth, barHeight, 5);
+  
+  health_p1 <= SPECIAL_ATTACK_MIN_HEALTH ? fill('red') : fill('green');
+  let p1HealthBar = barWidth * (health_p1 / MAX_HEALTH);
+  rect(0, height*0.32, p1HealthBar, barHeight, 5);
+  
+  health_p2 <= SPECIAL_ATTACK_MIN_HEALTH ? fill('red') : fill('green');
+  let p2HealthBar = barWidth * (health_p2 / MAX_HEALTH);
+  rect(width - p2HealthBar, height*0.32, p2HealthBar, barHeight, 5);
+}
+
+function resetGameState() {
+    p1.hurt = {
+      damage: 0,
+      knockback: 0,
+    }
+    p2.hurt = {
+      damage: 0,
+      knockback: 0,
+    }
+    p1.healthPoints = MAX_HEALTH;
+    p2.healthPoints = MAX_HEALTH;
+    p1.delay = false;
+    p2.delay = false;
+    p1.specialAttackUsed = false;
+    p2.specialAttackUsed = false;
+    p1.x = width * 0.4;
+    p1.y = height * 0.5;
+    p2.x = width * 0.6;
+    p2.y = height * 0.5;
+    timer = DURATION;
+  
+    music.stop();
+    music.setVolume(0.5);
+    music.play();
+    gameState = "run";
 }
