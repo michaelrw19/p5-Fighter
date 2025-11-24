@@ -7,4 +7,4 @@ SFX: Tekken 8
 
 You can access the game by download all files and open index.html or go to https://michaelrw19.github.io/p5-Fighter/ 
 
-It's best to play the game using controllers
+It's best to play the game using xbox controllers.
